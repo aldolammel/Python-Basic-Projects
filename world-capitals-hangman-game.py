@@ -40,6 +40,25 @@ for i in range(len(_words_library)):
 mistakesTolerance = 5
 
 
+def fnc_show_game_title():
+    _title = '''
+         ██╗       ██╗ █████╗ ██████╗ ██╗     ██████╗        █████╗  █████╗ ██████╗ ██╗████████╗ █████╗ ██╗      ██████╗
+         ██║  ██╗  ██║██╔══██╗██╔══██╗██║     ██╔══██╗      ██╔══██╗██╔══██╗██╔══██╗██║╚══██╔══╝██╔══██╗██║     ██╔════╝
+         ╚██╗████╗██╔╝██║  ██║██████╔╝██║     ██║  ██║      ██║  ╚═╝███████║██████╔╝██║   ██║   ███████║██║     ╚█████╗
+          ████╔═████║ ██║  ██║██╔══██╗██║     ██║  ██║      ██║  ██╗██╔══██║██╔═══╝ ██║   ██║   ██╔══██║██║      ╚═══██╗
+          ╚██╔╝ ╚██╔╝ ╚█████╔╝██║  ██║███████╗██████╔╝      ╚█████╔╝██║  ██║██║     ██║   ██║   ██║  ██║███████╗██████╔╝
+           ╚═╝   ╚═╝   ╚════╝ ╚═╝  ╚═╝╚══════╝╚═════╝        ╚════╝ ╚═╝  ╚═╝╚═╝     ╚═╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚═════╝
+        
+        ██╗  ██╗ █████╗ ███╗  ██╗ ██████╗ ███╗   ███╗ █████╗ ███╗  ██╗       ██████╗  █████╗ ███╗   ███╗███████╗
+        ██║  ██║██╔══██╗████╗ ██║██╔════╝ ████╗ ████║██╔══██╗████╗ ██║      ██╔════╝ ██╔══██╗████╗ ████║██╔════╝
+        ███████║███████║██╔██╗██║██║  ██╗ ██╔████╔██║███████║██╔██╗██║      ██║  ██╗ ███████║██╔████╔██║█████╗
+        ██╔══██║██╔══██║██║╚████║██║  ╚██╗██║╚██╔╝██║██╔══██║██║╚████║      ██║  ╚██╗██╔══██║██║╚██╔╝██║██╔══╝
+        ██║  ██║██║  ██║██║ ╚███║╚██████╔╝██║ ╚═╝ ██║██║  ██║██║ ╚███║      ╚██████╔╝██║  ██║██║ ╚═╝ ██║███████╗
+        ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚══╝ ╚═════╝ ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚══╝       ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝
+        '''
+    return print(_title)
+
+
 def fnc_show_word():
     """
     Shows the selected word but its characters hidden from the player until they figure it out
@@ -60,48 +79,68 @@ def fnc_hangman_mistakes(_mistakes):
     :return: None
     """
     global mistakesTolerance
+    _hang_states = [
+        '''
+        _ _ | _ _
+        ''',
+        '''
+            |
+            |
+            |
+            |
+            | 
+        _ _ | _ _
+        ''',
+        '''
+            ._ _ _ _ _.
+            |
+            |
+            |
+            |
+            | 
+        _ _ | _ _
+        ''',
+        '''
+            ._ _ _ _ _.
+            |         |
+            |         O
+            |
+            |
+            | 
+        _ _ | _ _
+        ''',
+        '''
+            ._ _ _ _ _.
+            |         |
+            |         O
+            |        /||
+            |
+            | 
+        _ _ | _ _
+        ''',
+        '''
+            ._ _ _ _ _.
+            |         |
+            |         O
+            |        /||
+            |         ||
+            | 
+        _ _ | _ _
+        '''
+    ]
     print(f'{_corF}')
     if _mistakes == mistakesTolerance - 4:
-        print('......')
+        print(_hang_states[0])
     if _mistakes == mistakesTolerance - 3:
-        print('|\n'
-              '|\n'
-              '|\n'
-              '|\n'
-              '|\n'
-              '......')
+        print(_hang_states[1])
     if _mistakes == mistakesTolerance - 2:
-        print('._________.\n'
-              '|\n'
-              '|\n'
-              '|\n'
-              '|\n'
-              '|\n'
-              '......')
+        print(_hang_states[2])
     if _mistakes == mistakesTolerance - 1:
-        print('._________.\n'
-              '|         |\n'
-              '|         O\n'
-              '|\n'
-              '|\n'
-              '|\n'
-              '......')
+        print(_hang_states[3])
     if _mistakes == mistakesTolerance:
-        print('._________.\n'
-              '|         |\n'
-              '|         O\n'
-              '|        /|\ \n'
-              '|\n'
-              '|\n'
-              '......')
+        print(_hang_states[4])
     if _mistakes > mistakesTolerance:
-        print('._________.\n'
-              '|         |\n'
-              '|         O\n'
-              '|        /|\ \n'
-              '|        / \ \n'
-              '|\n'
-              '......')
+        print(_hang_states[5])
     print(f'{_corOut}')
     return None
 
@@ -121,7 +160,7 @@ while True:
     _alreadyHit = list()
     _alreadyMis = list()
     # print(_wordSelected)                                                                               # debug option.
-    print('\nWELCOME TO THE WORLD CAPITAL CITIES HANGMAN GAME:')
+    fnc_show_game_title()
     fnc_show_word()
 
     while _mistakes <= mistakesTolerance:
