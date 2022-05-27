@@ -37,7 +37,7 @@ for i in range(len(_words_library)):
     _words_library[i] = _words_library[i].lower().strip()
 
 # GAME RULES
-mistakesTolerance = 5
+mistakesTolerance = 8
 
 
 def fnc_show_game_title():
@@ -191,7 +191,7 @@ while True:
                         _hiddenWord[i] = _userTry
                 fnc_show_word()
                 if _hitsTargeted == 0:
-                    print(f'{_corT}You won the game with', end=' ')
+                    print(f'{_corT}YOU WON the hangman game with', end=' ')
                     if _mistakes == 0:
                         print(f'no mistakes.{_corOut}\n')
                     elif _mistakes == 1:
@@ -213,7 +213,7 @@ while True:
                 print(f'{_corF}There is no "{_userTry}" in the word.\n'
                       f'You got {_mistakes} of {mistakesTolerance} mistakes tolerance.{_corOut}')
                 if _mistakes > mistakesTolerance:
-                    print(f'{_corF}You loose the game with {mistakesTolerance} mistakes!{_corOut}\n')
+                    print(f'{_corF}YOU LOOSE!{_corOut}\n')
                     break
             elif _userTry in _alreadyMis:
                 # print('Already mistaken:', _alreadyMis)                                                # debug option.
