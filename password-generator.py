@@ -1,6 +1,18 @@
 listPass = list()
 
 
+def fnc_show_logo():
+    _logo = '''
+    ██████   █████  ███████ ███████ ██     ██  ██████  ██████  ██████  
+    ██   ██ ██   ██ ██      ██      ██     ██ ██    ██ ██   ██ ██   ██ 
+    ██████  ███████ ███████ ███████ ██  █  ██ ██    ██ ██████  ██   ██ 
+    ██      ██   ██      ██      ██ ██ ███ ██ ██    ██ ██   ██ ██   ██ 
+    ██      ██   ██ ███████ ███████  ███ ███   ██████  ██   ██ ██████  
+    GENERATOR:                                                                              
+    '''
+    return print(_logo)
+
+
 def fnc_list(_value):
     """
     Just the list where the password characters will be saved
@@ -53,6 +65,19 @@ def fnc_special(_range=3):
     return None
 
 
+def fnc_password_generate(_list, _times=5):
+    """
+    Defines how many times the program will generate a new password
+    :param _list: the list used to save the password generated
+    :param _times: how many passwords options you want to show
+    :return: None
+    """
+    for i in range(_times):
+        fnc_password_ready(_list)
+        _list.clear()
+    return None
+
+
 def fnc_password_ready(_list):
     """
     Present the final result of password generation
@@ -64,9 +89,12 @@ def fnc_password_ready(_list):
     fnc_alphabet()                                                                 # generation of the password letters.
     fnc_special()                                                                # generation of the special characters.
     shuffle(_list)                                                       # shuffle the list with the generated password.
+    print('    ', end='')
     for i in _list:
         print(i, end='')
+    print()
     return None
 
 
-fnc_password_ready(listPass)
+fnc_show_logo()
+fnc_password_generate(listPass, 15)
