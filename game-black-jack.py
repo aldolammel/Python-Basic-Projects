@@ -64,7 +64,6 @@ def fnc_get_card(who, hand, show=True):
         card_received = int(input(f'\n{corY}[DEBUGGING ON]{corO} Add card to {who}: '))
 
     hand.append(card_received)
-    deck.remove(card_received)
 
     if isPlaying:
         # checking if the player wants an 11 or 1 card value:
@@ -168,7 +167,7 @@ def fnc_round_one():
 
     if isDebugging:
         print(f'\n{corY}[DEBUGGING CHECKING]:'
-              f'\nCurrent deck: {deck}'
+              f'\nDeck cards: {deck}'
               f'\nCurrent user hand: {u_hand}'
               f'\nCurrent dealer hand: {d_hand}')
 
@@ -211,7 +210,7 @@ def fnc_round_two():
     while isPlaying:
         d_turn_msg = f'{corD}Dealer\'s{corO} turn has been finished.'
         sleep(timing)
-        if sum(d_hand) < 21:
+        if sum(d_hand) < 21 and sum(u_hand) <= 21:
             if sum(d_hand) < 17:
                 fnc_get_card('The Dealer', d_hand)
             else:
@@ -233,8 +232,8 @@ def fnc_play_again():
     global isPlaying, isThereWinner
 
     if isDebugging:
-        print(f'\n{corY}[DEBUGGING INFO]:'
-              f'\nDeck cards remains = {deck}'
+        print(f'\n{corY}[DEBUGGING FINAL INFO]:'
+              f'\nDeck cards: {deck}'
               f'\nYour final hand = {u_hand} = {sum(u_hand)}'
               f'\nDealer final hand = {d_hand} = {sum(d_hand)}{corO}')
 
@@ -243,7 +242,7 @@ def fnc_play_again():
         isPlaying = True
         return isPlaying
     else:
-        print(f'\n{corD}The BLACKJACK game has been terminated. Bye. \nby @aldolammel{corO}')
+        print(f'\n{corD}The BLACKJACK game has been terminated. \nby @aldolammel{corO}')
         isPlaying = False
         return isPlaying
 
