@@ -14,6 +14,9 @@ if isDebugging:
 else:
     timing = 1
 
+# ERROR MESSAGES:
+ask_error_msg = f'\n{corD}Please, use "Y" for YES or "N" for NO.{corO}'
+
 
 def fnc_logo():
     """
@@ -51,7 +54,7 @@ def fnc_get_card(who, hand, show=True):
     It gives a card to dealer or to the user when called
     :param who: string. Name of the player
     :param hand: list. Hand of who will receive the card
-    :param show: bool. Whether the card will be shown to players
+    :param show: bool. Whether the card will be shown to players. Default: True
     :return: string message of a cord was given.
     """
     global isPlaying, deck, result
@@ -189,14 +192,21 @@ def fnc_round_two():
     Runs the last cards delivery.
     :return: fnc_check_winner.
     """
-    global isPlaying
+    global isPlaying, ask_error_msg
 
     # user last playing:
     while isPlaying:
         u_turn_msg = f'{corU}You{corO} stand, finishing your turn.'
         sleep(timing)
         if sum(u_hand) < 21:
-            if str(input(f'\n{corU}Your hand{corO} is {u_hand}! Another card? [y/n]: ')).strip().lower() == 'y':
+            while True:
+                ask_card = str(input(f'\n{corU}Your hand{corO} is {u_hand}! Another card? [y/n]: ')).strip().lower()
+                if ask_card == 'y' or ask_card == 'n':
+                    break
+                else:
+                    print(ask_error_msg)
+                    sleep(timing)
+            if ask_card == 'y':
                 sleep(timing)
                 fnc_get_card('You', u_hand)
             else:
@@ -229,7 +239,7 @@ def fnc_play_again():
     Just ask the user if they want to play again
     :return: bool value.
     """
-    global isPlaying, isThereWinner
+    global isPlaying, isThereWinner, ask_error_msg
 
     if isDebugging:
         print(f'\n{corY}[DEBUGGING FINAL INFO]:'
@@ -237,7 +247,14 @@ def fnc_play_again():
               f'\nYour final hand = {u_hand} = {sum(u_hand)}'
               f'\nDealer final hand = {d_hand} = {sum(d_hand)}{corO}')
 
-    if str(input('\nPlay again? [y/n]: ')).strip().lower() == 'y':
+    while True:
+        ask_play_again = str(input('\nPlay again? [y/n]: ')).strip().lower()
+        if ask_play_again == 'y' or ask_play_again == 'n':
+            break
+        else:
+            print(ask_error_msg)
+            sleep(timing)
+    if ask_play_again == 'y':
         isThereWinner = False
         isPlaying = True
         return isPlaying
