@@ -53,6 +53,10 @@ storage_money = {
 
 # FUNCTIONS ------------------------------------------------------------------------------------------------------------
 def fnc_logo():
+    """
+    Just the app logotype;
+    :return: None;
+    """
     print('''
      ██████  ██████  ███████ ███████ ███████ ███████        
     ██      ██    ██ ██      ██      ██      ██             
@@ -69,9 +73,17 @@ def fnc_logo():
     by @aldolammel                                         
                                                         
     ''')
+    return None
 
 
 def fnc_should_work(is_report=False, turn_off=False):
+    """
+    This function starts the app. It will check if the machine has enough ingredients to run and if any admin command
+    has been requested
+    :param is_report: Bool. If admin requests this command, it will show up the machine sale numbers and storage status.
+    :param turn_off: Bool. If admin requests this command, the machine will be turned off.
+    :return: if returning isWorking (False), the machine will turn off. If everything's fine, returns fnc_what_u_want().
+    """
     global isWorking
     sleep(1)
 
@@ -121,6 +133,12 @@ def fnc_should_work(is_report=False, turn_off=False):
 
 
 def fnc_what_u_want(is_first=True):
+    """
+    It's called right next the machine is turned on, and when the app will show the product options to the customer;
+    :param is_first: Bool. If is the first time the current customer is facing the product menu. Important to check this
+    if some product is not available anymore after the customer gives a go (sorry message, for example);
+    :return: fnc_should_work() if the admin tries an admin command, or fnc_check_ingreds() after the customer choices;
+    """
     if is_first:
         print('\n\nAVAILABLE HOT DRINKS:')
     else:
@@ -156,6 +174,12 @@ def fnc_what_u_want(is_first=True):
 
 
 def fnc_check_ingreds(prod_index):
+    """
+    After the customer gives a go in a product, this function will check if the product ingredients are enough to the
+    next step;
+    :param prod_index: Int. The index number (key) of the products dictionary;
+    :return: if everything is fine, it's called fnc_to_pay(), otherwise fnc_what_u_want(False);
+    """
     prod_name = products[prod_index][0]
     prod_ingreds = products[prod_index][3]['ingred']  # e.g: {'Water': 100, 'Coffee': 76}
 
@@ -191,6 +215,12 @@ def fnc_check_ingreds(prod_index):
 
 
 def fnc_to_pay(prod_index):
+    """
+    Product payment management. The function will check the available coins in the money storage and the product
+    prices. The machine will request coins until the customer pays the price and, just in case, return their change;
+    :param prod_index: Int. The index number (key) of the products dictionary;
+    :return: next the payment (and change when needed), it calls fnc_preparing();
+    """
     prod_name = products[prod_index][0]
     prod_price = products[prod_index][1]
     acceptable_coins = list()
@@ -200,6 +230,7 @@ def fnc_to_pay(prod_index):
         acceptable_coins.append(coin)
 
     # Calculating how many coins to buy:
+    # TODO gives an option to the customer cancel their order.
     while customer_money < prod_price:
         print(f'\nAcceptable coins: {acceptable_coins}')
         try:
@@ -272,6 +303,12 @@ def fnc_to_pay(prod_index):
 
 
 def fnc_preparing(prod_index, prod_name):
+    """
+    Right next to payment, this function will prepare the requested drink;
+    :param prod_index: Int. The index number (key) of the products dictionary;
+    :param prod_name: Str. The commercial name of the product from products dictionary;
+    :return: calls fnc_delivery() if everything is okay with preparation stage;
+    """
     sleep(1)
     print(f'\nPreparing your hot drink...')
     sleep(4)
@@ -280,6 +317,13 @@ def fnc_preparing(prod_index, prod_name):
 
 
 def fnc_delivery(prod_index, prod_name, is_ready):
+    """
+    When the drink is ready, this function is called;
+    :param prod_index: Int. The index number (key) of the products dictionary;
+    :param prod_name: Str. The commercial name of the product from products dictionary;
+    :param is_ready: Bool. If the drink is ready or not to delivery;
+    :return: an okay message or a not okay one;
+    """
     if is_ready:
         # counting how many of this product has been sold:
         products[prod_index][2] = products[prod_index][2] + 1
