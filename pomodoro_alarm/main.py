@@ -3,7 +3,6 @@ from math import floor
 from playsound import playsound
 
 # ---------------------------- CONSTANTS & INITIAL DECLARATIONS --------------------------------------------------------
-PINK = "#e2979c"
 RED = "#e7305b"
 GREEN = "#9bdeac"
 YELLOW = "#f7f5dd"
@@ -16,11 +15,14 @@ CLOCK_ZEROED = "00:00"
 TITLE_WAIT = ""
 TITLE_WORK = "Working"
 TITLE_SHORT_BREAK = "Resting"
-TITLE_LONG_BREAK = "Resting"
+TITLE_LONG_BREAK = "Take a break"
 CHECK_MARK_CYCLE = "✓"
 BT_START = "Start to work"
 BT_RESET = "Reset"
-ONE_SEC = 1  # 1 second has 1000 mileseconds
+ONE_SEC = 1000  # 1 second has 1000 mileseconds
+WINDOW_WIDTH = 380  # pixels
+WINDOW_HEIGHT = 400  # pixels
+WINDOW_PADDING = 50  # pixels
 
 timer = str()
 reps = 0
@@ -54,7 +56,7 @@ def reset():
 
 
 def do_nothing():
-    pass
+    print("This button is temporally disabled.")
 
 
 def start_timer():
@@ -81,16 +83,17 @@ def start_timer():
 
     else:
         is_work_running = False
-        playsound('./sounds/rest.wav')
 
         # If the 2nd, 4th or 6th rep:
         if reps in [2, 4, 6]:
             lb_title.config(text=TITLE_SHORT_BREAK, fg=GREEN)
+            playsound('./sounds/rest.wav')
             count_down(short_break_sec)
 
         # If it's the 8th rep:
         else:
             lb_title.config(text=TITLE_LONG_BREAK, fg=GREEN)
+            playsound('./sounds/long_rest.wav')
             count_down(long_break_sec)
 
 
@@ -115,33 +118,35 @@ def count_down(count):
         if reps < 8:
             start_timer()
         else:
-            playsound('./sounds/finished_cycle.wav')
+            playsound("./sounds/cycle_finished.wav")
             reset()
 
 
 # ---------------------------- UI SETUP --------------------------------------------------------------------------------
+
+
 window = Tk()
-window.minsize(width=600, height=400)
-window.config(padx=50, pady=50, bg=YELLOW)
+window.minsize(width=WINDOW_WIDTH, height=WINDOW_HEIGHT)
+window.config(padx=WINDOW_PADDING, pady=WINDOW_PADDING, bg=YELLOW)
 window.title("Pomodoro by @aldolammel")
 
 bg_img = PhotoImage(file="tomato.png")
-canvas = Canvas(width=216, height=226, bg=YELLOW, highlightthickness=0)
-canvas.create_image(110, 114, image=bg_img)
-txt_timer = canvas.create_text(110, 134, text=CLOCK_ZEROED, font=(FONT_NAME, 35, "bold"), fill="white")
-canvas.grid(column=1, row=1)
-
+canvas_max_width = WINDOW_WIDTH - (WINDOW_PADDING * 2)
+canvas = Canvas(width=canvas_max_width, height=226, bg=YELLOW, highlightthickness=0)
+canvas.create_image(140, 114, image=bg_img)
+txt_timer = canvas.create_text(140, 134, text=CLOCK_ZEROED, font=(FONT_NAME, 35, "bold"), fill="white")
+canvas.grid(column=0, row=1)
 
 # Labels
-lb_title = Label(text=TITLE_WAIT, font=(FONT_NAME, 30, "bold"), fg=RED, bg=YELLOW, highlightthickness=0)
-lb_title.grid(column=1, row=0)
+lb_title = Label(text=TITLE_WAIT, font=(FONT_NAME, 24, "bold"), fg=RED, bg=YELLOW, highlightthickness=0)
+lb_title.grid(column=0, row=0)
 lb_check_mark = Label(text="", font=(FONT_NAME, 18), fg=GREEN, bg=YELLOW, highlightthickness=0)
-lb_check_mark.grid(column=1, row=3)
+lb_check_mark.grid(column=0, row=2)
 
 # Buttons
 bt_start = Button(text=BT_START, command=start_timer)
-bt_start.grid(column=0, row=2)
+bt_start.grid(column=0, row=3)
 bt_reset = Button(text="", command=do_nothing)
-bt_reset.grid(column=2, row=2)
+bt_reset.grid(column=0, row=4)
 
 window.mainloop()  # keep the Tkinter window on screen
