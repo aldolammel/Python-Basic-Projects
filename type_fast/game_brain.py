@@ -21,14 +21,14 @@ class GameBrain:
         self.timer = Stopwatch(self.root, t_limiter)
 
     def start_timer(self):
-        self.Stopwatch.start()
+        self.timer.start()
 
     def restart(self):
         self.timer.stop()
-        check_word()
+        self.check_word()
         sleep(3)
         self.timer.should_play = True
-        start_timer()
+        self.start_timer()
 
     def check_word(self):  # "param=None" will block the necessity to call the func w/ "()", calling "check_word" only
         for w in self.wrds_selected:

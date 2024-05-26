@@ -2,7 +2,6 @@ from db import db_en
 from random import sample, shuffle
 from game_brain import GameBrain
 from game_ui import GameUI
-from stopwatch import Stopwatch
 
 # Game Setup:
 wrds_database = list(db_en)
@@ -28,8 +27,3 @@ print(len(wrds_selected))
 
 game_brain = GameBrain(wrds_selected, T_LIMITER)
 game_ui = GameUI(game_brain)
-
-# Timer class:
-timer = Stopwatch(game_ui.root, T_LIMITER, game_ui.lb_title, game_ui.user_input)
-
-

@@ -1,3 +1,4 @@
+from game_brain import GameBrain
 from tkinter import Canvas, Label
 
 
@@ -50,10 +51,10 @@ class GameUI:
 
 
 
-
+"""
 
         # TODO: if there's word available, do it:
         elif self.ui.user_input.get() == " ":
             # When it uses the space bar to start the word checking, an unwanted space is created. It'll delete that
             # but other characters:
-            self.ui.user_input.delete(0)
+            self.ui.user_input.delete(0)"""
