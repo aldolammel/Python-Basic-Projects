@@ -1,49 +1,27 @@
-from tkinter import Tk, Message, Entry, Button
-from time import sleep
+from random import sample, shuffle
 
 
 class GameBrain:
-    def __init__(self, wrds):
-        self.wrds_selected = wrds
-        # Window:
-        self.root = Tk()
+    def __init__(self, wrds, wrds_limiter):
+        self.wrds = wrds
+        self.wrds_limiter = wrds_limiter
+        self.wrds_selected = "Click 'New Game' to receive the words to type."
+        self.wrds_selected_bkp = list()
         # Managers:
-        self.should_start = False
-        self.should_stop = False
-        # Fields:
-        self.field_words = Message(text=self.wrds_selected)
-        self.user_input = Entry()
-        # Buttons:
-        self.bt_restart = Button(command=self.restart)
-        # Binds:
-        self.user_input.bind("<space>", self.check_word(), add="+")  # this "add='+'" means we're using more 1 key.
-        self.user_input.bind("<Return>", self.check_word(), add="+")
-        self.user_input.bind("<Key>", self.start_timer())  # "<Key>" means any key.
+        self.was_played = False
+        self.is_t_running = False
+        self.was_restarted = False
+        self.was_timeout = False
+        # Others:
+        self.last_display_num = ""
 
-    def start_timer(self):
-        self.should_stop = False
-        self.should_start = True
+    def select_new_wrds(self):
+        wrds_selected = sample(self.wrds, self.wrds_limiter)
+        shuffle(wrds_selected)
+        self.wrds_selected = wrds_selected.copy()
+        self.wrds_selected_bkp = wrds_selected.copy()
 
-    def restart(self):
-        self.should_stop = True
-        self.check_word()
-        sleep(3)
-        self.start_timer()
-
-    def check_word(self):  # "param=None" will block the necessity to call the func w/ "()", calling "check_word" only
-        for w in self.wrds_selected:
-            if w == self.user_input.get():
-                # Remove the correct word from the list:
-                self.wrds_selected.remove(w)
-                print(f"Correct: {w}!")
-                # Clean the field:
-                self.user_input.delete(0, len(w))
-                # Update the board:
-                self.field_words.config(text=self.wrds_selected)
-        # Check whether the game must keep is_t_running:
-        self.root.after(1, self.is_there_wrd_available)
-
-    def is_there_wrd_available(self):
-        if len(self.wrds_selected) == 0:
-            return False
-        return True
+    def should_play(self):
+        if len(self.wrds_selected) > 0:
+            return True
+        return False

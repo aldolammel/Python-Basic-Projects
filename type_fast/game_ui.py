@@ -1,5 +1,5 @@
 from game_brain import GameBrain
-from tkinter import Canvas, Label
+from tkinter import Tk, Canvas, Label, Message, Entry, Button
 from time import time
 
 
@@ -8,98 +8,178 @@ class GameUI:
     def __init__(self, game_brain: GameBrain, t_limiter):
         self.game = game_brain
         # Window:
-        self.game.root.title("Type Faster by @aldolammel")
-        self.game.root.minsize(width=0, height=0)
-        self.game.root.config(padx=20, pady=20, bg="#F1F1F1")
-        # Window > Canvas:
+        self.root = Tk()
+        self.root.title("Type Faster by @aldolammel")
+        self.root.minsize(width=0, height=0)
+        self.root.config(padx=20, pady=20, bg="#F1F1F1")
+        # Canvas:
         self.canvas = Canvas(width=400, height=300)
         self.canvas.config(highlightthickness=0, bg="#F1F1F1")
         self.canvas.grid(column=1, row=1, pady=10)
-        # Timer:
-        self.display = "00:00.000"
-        self.t_limiter = t_limiter
-        self.lb_t_display = Label(
-            self.game.root,
-            text=self.display,
-            font=("Arial", 28)
-        )
-        self.lb_t_display.grid(column=1, row=3)
-        self.start_t = None
-        self.is_t_running = False
-        self.should_play = True
-        self.update_display()
-        # Window > Label:
+        # Label:
         self.lb_title = Label(
-            text="Type these words:",
+            text="",
             font=("Arial", 14, 'bold'),
             fg="#000000",
             # bg="#FFFFFF"
         )
         self.lb_title.grid(column=1, row=0)
-        # Window > Fields:
-        self.game.field_words.config(
+        # Fields:
+        self.field_words = Message(
+            width=300,
             text=self.game.wrds_selected,
             font=("Arial", 12, 'bold'),
             fg="#000000",
             # bg="#FFFFFF"
         )
-        self.game.field_words.grid(column=1, row=1)
-        self.game.user_input.config(
+        self.field_words.grid(column=1, row=1)
+        self.user_input = Entry(
             width=20,
             font=("Arial", 12),
             fg="#000000",
-            bg="#FFFFFF"
+            bg="#FFFFFF",
+            state="disabled"
         )
-        self.game.user_input.grid(column=1, row=2)
+        self.user_input.grid(column=1, row=2)
+        self.user_input.bind("<Key>", self.start, add="+")  # "<Key>" means any key.
+        self.user_input.bind("<space>", self.check_word, add="+")  # this "add='+'" means we're using more 1 key.
+        self.user_input.bind("<Return>", self.check_word)  # Crucial it uses 'func' instead of 'func()'.
         # Buttons:
-        self.game.bt_restart.config(
+        self.bt_restart = Button(
             text="Restart",
+            command=self.restart,
+            state="disabled",
             font=("Arial", 12),
-            fg="#000000",
+            fg="#000000"
             # bg=""
         )
-        self.game.bt_restart.grid(column=1, row=5)
+        self.bt_restart.grid(column=1, row=5)
+        self.bt_new_game = Button(
+            text="New game",
+            command=self.new_game,
+            font=("Arial", 12),
+            fg="#000000"
+            # bg=""
+        )
+        self.bt_new_game.grid(column=1, row=6)
+        # Timer:
+        self.display_cleared = "00:00.000"
+        self.t_limiter = t_limiter
+        self.lb_t_display = Label(
+            text=self.display_cleared,
+            font=("Arial", 28)
+            # fg="",
+            # bg="",
+        )
+        self.lb_t_display.grid(column=1, row=3)
+        self.start_t = None
         # keep the Tkinter window on screen:
-        self.game.root.mainloop()
+        self.root.mainloop()
 
-    def start(self):
-        if not self.is_t_running and self.should_play:
+    def new_game(self):
+        # Manager flags:
+        self.game.was_played = True
+        self.game.was_restarted = False
+        self.game.was_timeout = False
+        # Stop the current match if running, and clear the timer:
+        self.stop_and_clear()
+        # Selecting new words for this match:
+        self.game.select_new_wrds()
+        # Update the interface labels and fields:
+        self.lb_title.config(text="Type these words:")
+        self.field_words.config(text=self.game.wrds_selected)
+        # Disable the restart button:
+        self.bt_restart.config(state="disabled")
+        # Player's allowed to start:
+        self.user_input.config(state="normal")
+        # TODO: set the field focus to make the play UX better.
+        # Debug feedback:
+        print("\n>> A New Game get started! Let's go!")
+
+    def restart(self):
+        # Manager flags:
+        self.game.was_restarted = True
+        self.game.was_timeout = False
+        # Stop the current counting and clear the timer display:
+        self.stop_and_clear()
+        # Load again the original selected words:
+        self.game.wrds_selected = self.game.wrds_selected_bkp.copy()
+        self.field_words.config(text=self.game.wrds_selected)
+        # Update the title label:
+        self.lb_title.config(text="Try again the same words:")
+        # Disable the restart button:
+        self.bt_restart.config(state="disabled")
+        # Normalized the field if it's disabled:
+        self.user_input.config(state="normal")
+
+    def start(self, param=None):  # 'param=None' avoids an error when using command in a Label() before another argument
+        if not self.game.is_t_running:
+            self.game.is_t_running = True
+            self.bt_restart.config(state="normal")
             self.start_t = time()
-            self.is_t_running = True
-            self.update_display()
+            self.update_timer()
+        elif self.user_input.get() == " ":  # When it uses the space bar to start the word checking,
+            # an unwanted space is created. It'll delete that, but other characters:
+            self.user_input.delete(0)
 
     def stop(self):
-        self.is_t_running = False
-        self.should_play = False
-        self.lb_title.config(text="The game's over!")
-        self.game.user_input.config(state="disabled")
-        print("\n>> The game's over!\n")
+        self.game.is_t_running = False
+        self.user_input.delete(0, len(self.user_input.get()))
+        self.user_input.config(state="disabled")
 
-    def update_display(self):
-        if self.is_t_running:
+    def stop_and_clear(self):
+        # Stop possible current match:
+        self.stop()
+        # Clear the timer display:
+        self.lb_t_display.config(text=self.display_cleared)
+
+    def check_word(self, param=None):
+        for word in self.game.wrds_selected:
+            if self.user_input.get() == word:
+                # Remove the correct word from the list:
+                self.game.wrds_selected.remove(word)
+                print(f"Correct: {word}!")
+                # Clean the field:
+                self.user_input.delete(0, len(word))
+                # Update the board:
+                self.field_words.config(text=self.game.wrds_selected)
+        if not self.game.should_play():
+            self.stop()
+            self.show_result()
+
+    def update_timer(self):
+        if not self.game.was_timeout and self.game.is_t_running:
             t_elapsed = int((time() - self.start_t) * 1000)
             t_limiter = self.t_limiter * 1000  # X seconds in milliseconds
-            # If timeout:
-            if t_elapsed >= t_limiter:
-                self.stop()
-                t_elapsed = t_limiter
-
+            # Building current display:
             min_ = (t_elapsed // 60000) % 60
             sec_ = (t_elapsed // 1000) % 60
             mil_ = t_elapsed % 1000
-            self.lb_t_display.config(text=f"{min_:02}:{sec_:02}.{mil_:03}")
+            self.game.last_display_num = f"{min_:02}:{sec_:02}.{mil_:03}"
+            self.lb_t_display.config(text=self.game.last_display_num)
+            # If timeout:
+            if t_elapsed >= t_limiter:
+                self.game.was_timeout = True
+                self.stop()
+                self.show_result()
+            # Update again:
+            if not self.game.was_timeout and self.game.is_t_running:
+                self.root.after(10, self.update_timer)
 
-            if self.is_t_running:
-                self.game.root.after(10, self.update_display)
-        # else:
-            # self.lb_t_display.config(text=self.display)
-
-
-"""
-        # TODO: if there's word available, do it:
-        elif self.ui.user_input.get() == " ":
-            # When it uses the space bar to start the word checking, an unwanted space is created. It'll delete that
-            # but other characters:
-            self.ui.user_input.delete(0)
-            
-"""
+    def show_result(self):
+        if not self.game.was_timeout:
+            self.lb_title.config(text="Final result:")
+            self.field_words.config(
+                text=f"Written words: {self.game.wrds_limiter - len(self.game.wrds_selected)}/{self.game.wrds_limiter}\n"
+                     f"Time taken: {self.game.last_display_num}")
+            print(
+                f"\n>> Written words: {self.game.wrds_limiter - len(self.game.wrds_selected)}/{self.game.wrds_limiter} "
+                f"| Time taken: {self.game.last_display_num}")
+        else:
+            self.lb_title.config(text="Partial result:")
+            self.field_words.config(
+                text=f"Written words: {self.game.wrds_limiter - len(self.game.wrds_selected)}/{self.game.wrds_limiter}\n"
+                     f"Time taken: TIMEOUT ({self.t_limiter} secs)")
+            print(
+                f"\n>> Written words: {self.game.wrds_limiter - len(self.game.wrds_selected)}/{self.game.wrds_limiter} "
+                f"| Time taken: TIMEOUT ({self.t_limiter} secs)")
