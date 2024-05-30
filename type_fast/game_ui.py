@@ -1,11 +1,11 @@
 from game_brain import GameBrain
-from tkinter import Tk, Canvas, Label, Message, Entry, Button
+from tkinter import Tk, Canvas, Label, Message, Entry, Button, StringVar, OptionMenu
 from time import time
 
 
 class GameUI:
 
-    def __init__(self, game_brain: GameBrain, t_limiter):
+    def __init__(self, game_brain: GameBrain):
         self.game = game_brain
         # Window:
         self.root = Tk()
@@ -16,7 +16,7 @@ class GameUI:
         self.canvas = Canvas(width=400, height=300)
         self.canvas.config(highlightthickness=0, bg="#F1F1F1")
         self.canvas.grid(column=1, row=1, pady=10)
-        # Label:
+        # Labels:
         self.lb_title = Label(
             text="",
             font=("Arial", 14, 'bold'),
@@ -27,7 +27,7 @@ class GameUI:
         # Fields:
         self.field_words = Message(
             width=300,
-            text=self.game.wrds_selected,
+            text=self.game.w_selected,
             font=("Arial", 12, 'bold'),
             fg="#000000",
             # bg="#FFFFFF"
@@ -44,6 +44,14 @@ class GameUI:
         self.user_input.bind("<Key>", self.start, add="+")  # "<Key>" means any key.
         self.user_input.bind("<space>", self.check_word, add="+")  # this "add='+'" means we're using more 1 key.
         self.user_input.bind("<Return>", self.check_word)  # Crucial it uses 'func' instead of 'func()'.
+        # Drop menus:
+        lang_options = ["English", "Portuguese", "Spanish", "Czech", "German", "French"]
+        self.lang_selected = StringVar()  # used to hold the field_db menu value when some selected.
+        self.lang_selected.set(lang_options[lang_options.index(self.game.lang)])  # default language.
+        self.lang_selected.trace("w", self.drop_lang_selected)
+        self.drop_lang = OptionMenu(self.root, self.lang_selected, *lang_options)
+        self.drop_lang.grid(column=1, row=0)
+        self.drop_lang.config(pady=10)
         # Buttons:
         self.bt_restart = Button(
             text="Restart",
@@ -64,7 +72,6 @@ class GameUI:
         self.bt_new_game.grid(column=1, row=6)
         # Timer:
         self.display_cleared = "00:00.000"
-        self.t_limiter = t_limiter
         self.lb_t_display = Label(
             text=self.display_cleared,
             font=("Arial", 28)
@@ -76,6 +83,9 @@ class GameUI:
         # keep the Tkinter window on screen:
         self.root.mainloop()
 
+    def drop_lang_selected(self, *args):
+        self.game.lang = self.lang_selected.get()
+
     def new_game(self):
         # Manager flags:
         self.game.was_played = True
@@ -83,18 +93,21 @@ class GameUI:
         self.game.was_timeout = False
         # Stop the current match if running, and clear the timer:
         self.stop_and_clear()
+        # Selecting the language:
+        self.game.select_language()
         # Selecting new words for this match:
         self.game.select_new_wrds()
         # Update the interface labels and fields:
         self.lb_title.config(text="Type these words:")
-        self.field_words.config(text=self.game.wrds_selected)
+        self.field_words.config(text=self.game.w_selected)
+        # Removing the language drop menu:
+        self.drop_lang.grid_forget()
         # Disable the restart button:
         self.bt_restart.config(state="disabled")
         # Player's allowed to start:
         self.user_input.config(state="normal")
-        # TODO: set the field focus to make the play UX better.
         # Debug feedback:
-        print("\n>> A New Game get started! Let's go!")
+        print(f"\n>> A New Game get ready with new {self.game.w_limiter} {self.game.lang} words. Start to type to go!")
 
     def restart(self):
         # Manager flags:
@@ -103,8 +116,8 @@ class GameUI:
         # Stop the current counting and clear the timer display:
         self.stop_and_clear()
         # Load again the original selected words:
-        self.game.wrds_selected = self.game.wrds_selected_bkp.copy()
-        self.field_words.config(text=self.game.wrds_selected)
+        self.game.w_selected = self.game.w_selected_bkp.copy()
+        self.field_words.config(text=self.game.w_selected)
         # Update the title label:
         self.lb_title.config(text="Try again the same words:")
         # Disable the restart button:
@@ -134,15 +147,15 @@ class GameUI:
         self.lb_t_display.config(text=self.display_cleared)
 
     def check_word(self, param=None):
-        for word in self.game.wrds_selected:
+        for word in self.game.w_selected:
             if self.user_input.get() == word:
                 # Remove the correct word from the list:
-                self.game.wrds_selected.remove(word)
+                self.game.w_selected.remove(word)
                 print(f"Correct: {word}!")
                 # Clean the field:
                 self.user_input.delete(0, len(word))
                 # Update the board:
-                self.field_words.config(text=self.game.wrds_selected)
+                self.field_words.config(text=self.game.w_selected)
         if not self.game.should_play():
             self.stop()
             self.show_result()
@@ -150,7 +163,7 @@ class GameUI:
     def update_timer(self):
         if not self.game.was_timeout and self.game.is_t_running:
             t_elapsed = int((time() - self.start_t) * 1000)
-            t_limiter = self.t_limiter * 1000  # X seconds in milliseconds
+            t_limiter = self.game.t_limiter * 1000  # X seconds in milliseconds
             # Building current display:
             min_ = (t_elapsed // 60000) % 60
             sec_ = (t_elapsed // 1000) % 60
@@ -170,16 +183,16 @@ class GameUI:
         if not self.game.was_timeout:
             self.lb_title.config(text="Final result:")
             self.field_words.config(
-                text=f"Written words: {self.game.wrds_limiter - len(self.game.wrds_selected)}/{self.game.wrds_limiter}\n"
+                text=f"Written words: {self.game.w_limiter - len(self.game.w_selected)}/{self.game.w_limiter}\n"
                      f"Time taken: {self.game.last_display_num}")
             print(
-                f"\n>> Written words: {self.game.wrds_limiter - len(self.game.wrds_selected)}/{self.game.wrds_limiter} "
+                f"\n>> Written words: {self.game.w_limiter - len(self.game.w_selected)}/{self.game.w_limiter} "
                 f"| Time taken: {self.game.last_display_num}")
         else:
             self.lb_title.config(text="Partial result:")
             self.field_words.config(
-                text=f"Written words: {self.game.wrds_limiter - len(self.game.wrds_selected)}/{self.game.wrds_limiter}\n"
-                     f"Time taken: TIMEOUT ({self.t_limiter} secs)")
+                text=f"Written words: {self.game.w_limiter - len(self.game.w_selected)}/{self.game.w_limiter}\n"
+                     f"Time taken: TIMEOUT ({self.game.t_limiter} secs)")
             print(
-                f"\n>> Written words: {self.game.wrds_limiter - len(self.game.wrds_selected)}/{self.game.wrds_limiter} "
-                f"| Time taken: TIMEOUT ({self.t_limiter} secs)")
+                f"\n>> Written words: {self.game.w_limiter - len(self.game.w_selected)}/{self.game.w_limiter} "
+                f"| Time taken: TIMEOUT ({self.game.t_limiter} secs)")
